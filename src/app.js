@@ -6,16 +6,10 @@ const {connectDB} = require("./config/database");
 
 const User = require("./models/user");
 
-app.post("/signup",async(req,res)=>{
-    
-    const user = new User({
-        firstName : "Vaishnavi",
-        lastName : "Chaudhari",
-        email : "vaish@chaudhari.com",
-        password : "vaish@123",
-        otp : "1234"
-    });
+app.use(express.json());
 
+app.post("/signup",async(req,res)=>{
+    const user = new User(req.body);
     try{
         await user.save();
         res.send("User added successfully");
@@ -23,6 +17,7 @@ app.post("/signup",async(req,res)=>{
         res.status(400).send("Unable to save user");
     }
 });
+    
 
 
 connectDB().then(()=>{
