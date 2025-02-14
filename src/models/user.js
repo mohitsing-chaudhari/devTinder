@@ -37,6 +37,14 @@ const userSchema = mongoose.Schema({
         type : Number,
         min : 18 // ensures the user must be 18+
     },
+    gender : {
+        type : String,
+        validate : function(value){
+            if(!["male","female","other"].includes(value)){
+                throw new Error("Gender not valid"); 
+            }
+        }
+    },
     skills : {
         type : [String],
     }
