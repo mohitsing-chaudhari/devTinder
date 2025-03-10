@@ -1,4 +1,5 @@
 const mongoose  = require("mongoose");
+const validator = require("validator");
 
 const userSchema = mongoose.Schema({
     firstName : {
@@ -18,13 +19,23 @@ const userSchema = mongoose.Schema({
             unique: true// email must be unique
         },
         lowercase : true,
-        trim : true
+        trim : true,
+        validate(value){
+            if(!validator.isEmail(value)){
+                throw new Error("Invalid Email");
+            }
+        }
     },
     password :{
         type : String,
         required : true, //ensures password must be required while signing up
         minLength : 8, // If the type is string use minLength and if the type is number use min
-        trim : true // if user entered spaces in email then this will remove it
+        trim : true, // if user entered spaces in email then this will remove it
+        validate(value){
+            if(!validator.isStrongPassword(value)){
+                throw new Error("Enter Strong Passwoed");
+            }
+        }
     },
     mobNo : {
         type : Number,
@@ -47,6 +58,15 @@ const userSchema = mongoose.Schema({
     },
     skills : {
         type : [String],
+    },
+    photourl : {
+        type : String,
+        default : "https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png",
+        validate(value){
+            if(!validator.isURL(value)){
+                throw new Error("Invalid Photo URL");
+            }
+        }
     }
 },{
     timestamps : true,
