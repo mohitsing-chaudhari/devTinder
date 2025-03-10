@@ -15,16 +15,16 @@ const userSchema = mongoose.Schema({
         type : String,
         required : true,
         index: {
-            unique: true
+            unique: true// email must be unique
         },
         lowercase : true,
         trim : true
     },
     password :{
         type : String,
-        required : true,
+        required : true, //ensures password must be required while signing up
         minLength : 8, // If the type is string use minLength and if the type is number use min
-        trim : true
+        trim : true // if user entered spaces in email then this will remove it
     },
     mobNo : {
         type : Number,

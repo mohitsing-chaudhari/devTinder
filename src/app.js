@@ -6,7 +6,7 @@ const {connectDB} = require("./config/database");
 
 const User = require("./models/user");
 
-app.use(express.json());
+app.use(express.json());// it converts all data into json 
 
 
 //sign up API
@@ -20,6 +20,7 @@ app.post("/signup",async(req,res)=>{
     }
 });
     
+
 //get one user with specific email
 app.get("/user",async(req,res)=>{
     try{
@@ -62,14 +63,25 @@ app.delete("/user",async(req,res)=>{
 
 
 //updating user data
-app.patch("/user",async(req,res)=>{
-    const userId = req.body.userId;
+app.patch("/user/:userId",async(req,res)=>{
+    const userId = req.params?.userId;
     const data = req.body;
     try{
+        const updateAllowed = ["firstName","lastName","password","gender","skills"];
+
+        const isUpdateAllowed = Object.keys(data).every((k) => updateAllowed.includes(k));
+
+        if(!isUpdateAllowed){
+            throw new Error("Update not possible");
+        }
+
+        if(data.skills.length > 10){
+            throw new Error("Skills not more than 10");
+        }
         await User.findByIdAndUpdate(userId,data);
         res.send("User updated successfully");
     }catch(err){
-        res.send("Something went wrong");
+        res.send("Update failed "+err.message);
     }
 })
 
