@@ -39,10 +39,6 @@ const userSchema = mongoose.Schema({
     },
     mobNo : {
         type : Number,
-        index: {
-            unique: true
-        },
-        trim : true
     },
     age : {
         type : Number,

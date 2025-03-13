@@ -6,17 +6,31 @@ const {connectDB} = require("./config/database");
 
 const User = require("./models/user");
 
+const {validateUser}=require("./utils/validate");
+
+const bcrypt = require("bcrypt");
+
+const validator = require("validator")
+
 app.use(express.json());// it converts all data into json 
 
 
 //sign up API
 app.post("/signup",async(req,res)=>{
-    const user = new User(req.body);
     try{
+        validateUser(req);
+        const {firstName,lastName,email,password}=req.body;
+        const passwordHash = await bcrypt.hash(password,10);
+        const user = new User({
+            firstName,
+            lastName,
+            email,
+            password:passwordHash
+        });
         await user.save();
         res.send("User added successfully");
     }catch(err){
-        res.status(400).send("Unable to save user"+err.message);
+        res.status(400).send("Unable to save user "+err.message);
     }
 });
     
@@ -85,7 +99,26 @@ app.patch("/user/:userId",async(req,res)=>{
     }
 })
 
-
+app.post("/login",async(req,res)=>{
+    try{
+        const {email,password}=req.body;
+        if(!validator.isEmail(email)){
+            throw new Error("Invalid Email");
+        }
+        const user = await User.findOne({email:email});
+        if(!user){
+            throw new Error("User not found");
+        }
+        const isPasswordCorrect = await bcrypt.compare(password,user.password);
+        if(!isPasswordCorrect){
+            throw new Error("Incorrect Password");
+        }else{
+            res.send("Login Successful");
+        }
+    }catch(err){
+        res.send("Error "+err.message);
+    }
+});
 
 connectDB().then(()=>{
     console.log("Database successfully connected");
