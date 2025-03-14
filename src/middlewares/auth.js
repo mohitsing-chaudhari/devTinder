@@ -1,21 +1,28 @@
-function adminAuth(req,res,next){
-    const token = "xyz";
-    if(token === "xyz"){
-        next();
-    }else{
-        res.status(401).send("Unauthorized admin");
-    }
-}
+const jwt = require("jsonwebtoken");
+const  User  = require("../models/user");
 
-function userAuth(req,res,next){
-    const token = "xyz";
-    if(token === "xyz"){
+async function userAuth(req,res,next){
+    try{
+        const cookie = req.cookies;
+        const{token} = cookie;
+    
+        if(!token){
+            throw new Error("Invalid Token");
+        }
+    
+        const decodeMessage = await jwt.verify(token,"DevTinder");
+    
+        const{_id}=decodeMessage;
+    
+        const user = await User.findById(_id);
+    
+        req.user = user;
         next();
-    }else{
-        res.status(401).send("Unauthorized User");
+    }catch(err){
+        res.send("Error:- " +err.message);
     }
+
 }
 module.exports = {
-    adminAuth,
     userAuth
 }

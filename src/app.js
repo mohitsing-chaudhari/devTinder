@@ -13,6 +13,7 @@ const bcrypt = require("bcrypt");
 const validator = require("validator")
 const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
+const {userAuth} = require("./middlewares/auth");
 
 app.use(express.json());// it converts all data into json 
 app.use(cookieParser());
@@ -101,6 +102,8 @@ app.patch("/user/:userId",async(req,res)=>{
     }
 })
 
+
+//login api
 app.post("/login",async(req,res)=>{
     try{
         const {email,password}=req.body;
@@ -116,7 +119,7 @@ app.post("/login",async(req,res)=>{
             throw new Error("Incorrect Password");
         }else{
             // creating a jwt token
-            const token = await jwt.sign({_id:user._id},"DevTinder");
+            const token = await jwt.sign({_id:user._id},"DevTinder",{expiresIn:"7d"});
             console.log(token);
             // adding cookie to token
             res.cookie("token",token);
@@ -128,25 +131,21 @@ app.post("/login",async(req,res)=>{
 });
 
 // get user profile
-app.get("/profile",async(req,res)=>{
+app.get("/profile",userAuth,async(req,res)=>{
     try{
-        const cookies = req.cookies;
-        const {token} = cookies;
-        if(!token){
-            throw new Error("Invalid Token");
-        }
-        const decodeMessage = await jwt.verify(token,"DevTinder");
-        const {_id} = decodeMessage;
-        const user = await User.findById(_id);
-        if(!user){
-            throw new Error("User Not Found");
-        }
+        const user = req.user;
         res.send(user);
     }catch(err){
         res.send("Error "+err.message);
     }
 });
 
+// sending connection request
+app.post("/sendConnectionRequest",userAuth,async(req,res)=>{
+    const user = req.user;
+    console.log("Connection Request Sent");
+    res.send(user.firstName+ " send you connection request");
+});
 
 connectDB().then(()=>{
     console.log("Database successfully connected");
