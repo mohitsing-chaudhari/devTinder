@@ -11,9 +11,11 @@ const {validateUser}=require("./utils/validate");
 const bcrypt = require("bcrypt");
 
 const validator = require("validator")
+const cookieParser = require('cookie-parser');
+const jwt = require('jsonwebtoken');
 
 app.use(express.json());// it converts all data into json 
-
+app.use(cookieParser());
 
 //sign up API
 app.post("/signup",async(req,res)=>{
@@ -113,12 +115,38 @@ app.post("/login",async(req,res)=>{
         if(!isPasswordCorrect){
             throw new Error("Incorrect Password");
         }else{
+            // creating a jwt token
+            const token = await jwt.sign({_id:user._id},"DevTinder");
+            console.log(token);
+            // adding cookie to token
+            res.cookie("token",token);
             res.send("Login Successful");
         }
     }catch(err){
         res.send("Error "+err.message);
     }
 });
+
+// get user profile
+app.get("/profile",async(req,res)=>{
+    try{
+        const cookies = req.cookies;
+        const {token} = cookies;
+        if(!token){
+            throw new Error("Invalid Token");
+        }
+        const decodeMessage = await jwt.verify(token,"DevTinder");
+        const {_id} = decodeMessage;
+        const user = await User.findById(_id);
+        if(!user){
+            throw new Error("User Not Found");
+        }
+        res.send(user);
+    }catch(err){
+        res.send("Error "+err.message);
+    }
+});
+
 
 connectDB().then(()=>{
     console.log("Database successfully connected");
