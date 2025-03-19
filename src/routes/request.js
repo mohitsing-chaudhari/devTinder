@@ -4,13 +4,6 @@ const {userAuth} = require("../middlewares/auth");
 const ConnectionRequest = require("../models/connectionRequest");
 const User = require("../models/user");
 
-// sending connection request
-requestRouter.post("/sendConnectionRequest",userAuth,async(req,res)=>{
-    const user = req.user;
-    console.log("Connection Request Sent");
-    res.send(user.firstName+ " send you connection request");
-});
-
 requestRouter.post("/request/send/:status/:userId",userAuth,async(req,res)=>{
     try{
         const fromUserId = req.user._id;
@@ -44,7 +37,7 @@ requestRouter.post("/request/send/:status/:userId",userAuth,async(req,res)=>{
         const connectionRequest = new ConnectionRequest({fromUserId,toUserId,status});
         const data = await connectionRequest.save();
         res.json({
-            message:`${req.user.firstName} is interested in ${toUser.firstName} profile`,
+            message:`${req.user.firstName} is ${status} in ${toUser.firstName} profile`,
             data
         });
     }catch(err){
@@ -52,4 +45,32 @@ requestRouter.post("/request/send/:status/:userId",userAuth,async(req,res)=>{
     }
 
 });
+
+requestRouter.post("/request/received/:status/:requestId",userAuth,async(req,res)=>{
+    try{
+        const loggedInUser = req.user;
+        const status = req.params.status;
+        const requestId = req.params.requestId;
+
+        const allowedStatus = ["accepted","rejected"];
+        if(!allowedStatus.includes(status)){
+            throw new Error("Invalid Status");
+        }
+
+        const connectionRequest = await ConnectionRequest.findOne({
+            _id:requestId,
+            toUserId:loggedInUser._id,
+            status:"interested"
+        });
+        if(!connectionRequest){
+            throw new Error("No Request Found");
+        }
+        
+        connectionRequest.status = status;
+        const data = await connectionRequest.save();
+        res.json({message:`Connection Request ${status}`,data});
+    }catch(err){
+        res.send("Error:-"+err.message);
+    }
+})
 module.exports = requestRouter;

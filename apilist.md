@@ -12,11 +12,9 @@
 
 # connectionRequestRouter
 - POST /request/send/:status/:userId  status can be interested or ignored
-- 
-- POST /request/received/accepted/:requestId
-- POST /request/received/rejected/:requestId
+- POST /request/received/:status/:requestId  status can be accepted or rejected
 
 # userRouter
+- GET /user/requests/received
 - GET /user/connection
-- GET /user/requests
 - GET /user/feed

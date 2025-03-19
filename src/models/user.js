@@ -55,6 +55,10 @@ const userSchema = mongoose.Schema({
     skills : {
         type : [String],
     },
+    about:{
+        type:String,
+        default:"This is a default about of a user"
+    },
     photourl : {
         type : String,
         default : "https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png",

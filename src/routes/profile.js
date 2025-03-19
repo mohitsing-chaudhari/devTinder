@@ -23,10 +23,8 @@ profileRouter.patch("/profile/edit",userAuth,async(req,res)=>{
             throw new Error("Password cant updated");
         }
         const user = req.user;
-        console.log(user);
         Object.keys(req.body).forEach((key)=>{user[key]=req.body[key]});
-        console.log(user)
-        user.save();
+        await user.save();
         res.send(`${user.firstName} your profile is updated successfully`);
     }catch(err){
         res.send("Error:- "+err.message);
@@ -45,10 +43,8 @@ profileRouter.patch("/profile/password",userAuth,async(req,res)=>{
             throw new Error("Enter a strong Password");
         }
         const newPasswordHash = await bcrypt.hash(newPassword,10);
-        console.log(user.password);
         user.password=newPasswordHash;
         await user.save();
-        console.log(user.password);
         res.send("Password Changed Successfully");
     }catch(err){
         res.send("Error:-"+err.message);
